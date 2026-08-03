@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
-        DOCKER_REGISTRY = 'yourdockerhub'
+        DOCKER_REGISTRY = 'akshatverma087'
         BACKEND_IMAGE = "${DOCKER_REGISTRY}/eventportal-backend"
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/eventportal-frontend"
         TAG = "v${BUILD_NUMBER}"

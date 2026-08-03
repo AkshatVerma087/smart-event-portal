@@ -17,7 +17,7 @@ spec:
       initContainers:
         # INNOVATION: Automated Database Migrations before backend starts
         - name: prisma-migrate
-          image: yourdockerhub/eventportal-backend:v1
+          image: akshatverma087/eventportal-backend:v1
           command: ["npx", "prisma", "db", "push"]
           env:
             - name: DATABASE_URL
@@ -27,7 +27,7 @@ spec:
                   key: database_url
       containers:
         - name: eventportal-backend
-          image: yourdockerhub/eventportal-backend:v1
+          image: akshatverma087/eventportal-backend:v1
           ports:
             - containerPort: 5000
           env:

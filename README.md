@@ -24,18 +24,18 @@ This repository contains the source code and complete DevOps infrastructure for 
 ```bash
 # Build Backend
 cd backend
-docker build -t yourdockerhub/eventportal-backend:v1 .
+docker build -t akshatverma087/eventportal-backend:v1 .
 
 # Build Frontend
 cd frontend
-docker build -t yourdockerhub/eventportal-frontend:v1 .
+docker build -t akshatverma087/eventportal-frontend:v1 .
 ```
 
 ### Pushing to Docker Hub
 ```bash
 docker login
-docker push yourdockerhub/eventportal-backend:v1
-docker push yourdockerhub/eventportal-frontend:v1
+docker push akshatverma087/eventportal-backend:v1
+docker push akshatverma087/eventportal-frontend:v1
 ```
 
 ## Phase 3: Kubernetes Deployment
@@ -65,7 +65,7 @@ kubectl get svc
 kubectl scale deployment eventportal-frontend --replicas=3
 
 # Rollout new version
-kubectl set image deployment/eventportal-backend eventportal-backend=yourdockerhub/eventportal-backend:v2
+kubectl set image deployment/eventportal-backend eventportal-backend=akshatverma087/eventportal-backend:v2
 kubectl rollout status deployment/eventportal-backend
 
 # Rollback
