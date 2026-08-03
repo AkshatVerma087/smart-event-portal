@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventportal-frontend
+  labels:
+    app: eventportal-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eventportal-frontend
+  template:
+    metadata:
+      labels:
+        app: eventportal-frontend
+    spec:
+      containers:
+        - name: eventportal-frontend
+          image: yourdockerhub/eventportal-frontend:v1
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5

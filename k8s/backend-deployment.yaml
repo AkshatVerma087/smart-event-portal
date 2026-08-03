@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventportal-backend
+  labels:
+    app: eventportal-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eventportal-backend
+  template:
+    metadata:
+      labels:
+        app: eventportal-backend
+    spec:
+      initContainers:
+        # INNOVATION: Automated Database Migrations before backend starts
+        - name: prisma-migrate
+          image: yourdockerhub/eventportal-backend:v1
+          command: ["npx", "prisma", "db", "push"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: database_url
+      containers:
+        - name: eventportal-backend
+          image: yourdockerhub/eventportal-backend:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: database_url
+            - name: JWT_SECRET
+              value: "supersecretjwt"
+          # INNOVATION: Advanced Health Probes
+          livenessProbe:
+            httpGet:
+              path: /api/events
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /api/events
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10

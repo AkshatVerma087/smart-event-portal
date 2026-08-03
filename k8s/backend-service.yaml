@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eventportal-backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: eventportal-backend
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
