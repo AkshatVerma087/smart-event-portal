@@ -7,6 +7,7 @@ pipeline {
         BACKEND_IMAGE = "${DOCKER_REGISTRY}/event-portal-backend"
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/event-portal-frontend"
         TAG = "v${BUILD_NUMBER}"
+        KUBECONFIG = 'C:\\Users\\asus\\.kube\\config'
     }
 
     stages {
