@@ -1,97 +1,78 @@
-# Smart Event Portal - DevOps Pipeline
+# Smart Event Management Portal - DevOps Pipeline
 
-This repository contains the source code and complete DevOps infrastructure for the Smart Event Management Portal.
+This repository contains the complete source code and DevOps pipeline configurations for the Smart Event Management Portal. It demonstrates a modern, cloud-native application lifecycle spanning from local development to automated deployment.
 
-## Architecture
-- **Frontend**: React (Vite)
-- **Backend**: Node.js, Express, Prisma
-- **Database**: PostgreSQL
-- **Infrastructure**: Docker, Kubernetes, Jenkins CI/CD
+## Architecture & Tech Stack
 
-## Prerequisites
-- Docker & Docker Desktop (for building images)
-- Minikube or an active Kubernetes Cluster
-- `kubectl` configured to your cluster
-- Jenkins server with Git, Docker, and Kubernetes plugins installed
+This project uses a multi-tier microservices architecture:
 
-## Phase 1 & 2: Local Setup & Dockerization
+- **Frontend:** React / Vite application served by Nginx.
+- **Backend:** Node.js Express REST API.
+- **Database:** PostgreSQL accessed via Prisma ORM.
 
-### Running the App Locally (Without Docker)
-1. Navigate to `/backend`, run `npm install`, add a `.env` file with `DATABASE_URL`, and run `npm run dev`.
-2. Navigate to `/frontend`, run `npm install`, and run `npm run dev`.
+### DevOps Toolchain
+- **Source Code Management:** Git & GitHub
+- **Containerization:** Docker & Docker Compose
+- **Orchestration:** Kubernetes (Deployment, Service, Scaling, Rolling Updates)
+- **CI/CD Automation:** Jenkins (Declarative Pipeline)
 
-### Building the Docker Images
-```bash
-# Build Backend
-cd backend
-docker build -t akshatverma087/eventportal-backend:v1 .
+---
 
-# Build Frontend
-cd frontend
-docker build -t akshatverma087/eventportal-frontend:v1 .
+## Directory Structure
+
+```
+smart-event-portal/
+├── frontend/               # React frontend source code and Dockerfile
+├── backend/                # Node.js backend source code and Dockerfile
+├── k8s/                    # Kubernetes manifests (deployments, services)
+├── docker-compose.yml      # Local development multi-container setup
+├── Jenkinsfile             # Automated CI/CD pipeline definition
+├── architecture-diagram.md # Mermaid architecture visualization
+└── innovation-report.md    # Details on advanced DevSecOps features implemented
 ```
 
-### Pushing to Docker Hub
+---
+
+## Getting Started
+
+### 1. Running Locally (Docker Compose)
+To run the entire stack locally without installing Node.js or Postgres:
+
 ```bash
-docker login
-docker push akshatverma087/eventportal-backend:v1
-docker push akshatverma087/eventportal-frontend:v1
+docker-compose up -d --build
 ```
+- Frontend will be available at: `http://localhost:5173`
+- Backend API will be available at: `http://localhost:5000`
 
-## Phase 3: Kubernetes Deployment
+### 2. Deploying to Kubernetes (Local / Minikube / Docker Desktop)
+Ensure your Kubernetes cluster is running, then apply the manifests:
 
-To deploy this architecture to Kubernetes, ensure your cluster is running and apply the YAML manifests in the `k8s/` directory.
-
-### Create Database Secret
-Because our backend uses an `initContainer` (Innovation Feature 2) for automated database migrations, you must first create a K8s secret containing your database URL:
-```bash
-kubectl create secret generic db-credentials --from-literal=database_url="postgresql://user:pass@host:5432/db"
-```
-
-### Apply Manifests
 ```bash
 kubectl apply -f k8s/
 ```
 
-### Verify Deployment, Scale, and Rollout
+Check the status of your pods:
 ```bash
-# Check Pods
 kubectl get pods
-
-# Check Services
-kubectl get svc
-
-# Scale the application
-kubectl scale deployment eventportal-frontend --replicas=3
-
-# Rollout new version
-kubectl set image deployment/eventportal-backend eventportal-backend=akshatverma087/eventportal-backend:v2
-kubectl rollout status deployment/eventportal-backend
-
-# Rollback
-kubectl rollout undo deployment/eventportal-backend
 ```
 
-## Phase 4: Jenkins CI/CD
+### 3. CI/CD Automation (Jenkins)
+The provided `Jenkinsfile` orchestrates the entire deployment process:
+1. **Checkout:** Pulls the latest code.
+2. **Build & Test:** Runs NPM install and tests.
+3. **Containerize:** Builds Docker images for frontend and backend.
+4. **Security Scan:** Analyzes images for vulnerabilities.
+5. **Push:** Pushes versioned images to Docker Hub.
+6. **Deploy:** Dynamically updates Kubernetes manifests and applies them.
+7. **Verify & Rollback:** Automatically rolls back the deployment if health checks fail.
 
-The included `Jenkinsfile` fully automates the CI/CD lifecycle.
+---
 
-### Setup Instructions
-1. In Jenkins, install the **Git**, **Docker Pipeline**, and **Kubernetes** plugins.
-2. Add your Docker Hub credentials in Jenkins (ID: `dockerhub-credentials`).
-3. Create a new "Pipeline" job and point it to this GitHub repository.
-4. Set up a Webhook in GitHub to trigger the Jenkins build on every `push`.
+## Innovation Challenge Features
 
-### Pipeline Stages
-1. **Checkout**: Pulls the latest code.
-2. **Build & Test**: Installs dependencies.
-3. **Security Scan (Innovation 1)**: Runs Trivy to detect vulnerabilities.
-4. **Build & Push Docker Images**: Containerizes the app with the latest Build Tag.
-5. **Deploy to K8s**: Updates the YAML manifests with the new tag and applies them.
-6. **Verify & Rollback**: Checks the K8s rollout status. If it fails, it automatically issues a `kubectl rollout undo` command.
+As part of the project requirements, several advanced cloud-native features were integrated:
+1. **DevSecOps Integration:** Automated vulnerability scanning during the build process.
+2. **Zero-Downtime DB Migrations:** Kubernetes `initContainers` handle database schema updates before backend pods start.
+3. **Advanced Health Probes:** Custom Liveness and Readiness probes to ensure resilient autoscaling.
 
-## Innovation Challenge
-Please refer to `innovation-report.md` for a detailed breakdown of the three innovative DevOps features implemented in this pipeline:
-1. DevSecOps Image Scanning
-2. Automated Database Migrations via InitContainers
-3. Advanced Self-Healing Health Probes
+*See `innovation-report.md` for a full breakdown of these features.*
