@@ -48,14 +48,6 @@ pipeline {
             }
         }
 
-        stage('Security Scan (INNOVATION)') {
-            steps {
-                script {
-                    bat "echo 'Security scan passed (Simulated for Windows compatibility)'"
-                }
-            }
-        }
-
         stage('Push Docker Images') {
             steps {
                 script {

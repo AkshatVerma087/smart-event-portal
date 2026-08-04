@@ -21,7 +21,7 @@ Here is a detailed breakdown of the files and directories in this repository and
   - `db-secret.yaml`: Securely stores the database credentials.
 - **`Jenkinsfile`**: The heart of the CI/CD pipeline. A Groovy script that dictates every step Jenkins takes from checking out the code to deploying it to Kubernetes.
 - **`docker-compose.yml`**: A configuration file used to spin up the entire application stack locally with a single command for development purposes.
-- **`innovation-report.md`**: A detailed report on the advanced DevSecOps features (vulnerability scanning, automated DB migrations, advanced health probes) implemented for the Innovation Challenge.
+- **`innovation-report.md`**: A detailed report on the advanced DevSecOps features (automated rollbacks, automated DB migrations, advanced health probes) implemented for the Innovation Challenge.
 
 ---
 
@@ -35,22 +35,20 @@ graph TD
     B --> C(Build & Test Backend)
     C --> D(Build & Test Frontend)
     D --> E(Build Docker Images)
-    E --> F(Security Scan)
-    F --> G(Push to Docker Hub)
-    G --> H(Deploy to Kubernetes)
-    H --> I(Verify Deployment)
-    I -->|Failure| J[Auto-Rollback]
-    I -->|Success| K[Deployment Complete]
+    E --> F(Push to Docker Hub)
+    F --> G(Deploy to Kubernetes)
+    G --> H(Verify Deployment)
+    H -->|Failure| I[Auto-Rollback]
+    H -->|Success| J[Deployment Complete]
 ```
 
 ### Pipeline Stages Explained:
 1. **Checkout SCM**: Jenkins connects to GitHub and pulls the latest source code.
 2. **Build & Test**: Jenkins enters the `backend` and `frontend` directories, installs dependencies via `npm`, runs tests, and creates the optimized frontend build.
 3. **Build Docker Images**: Jenkins reads the `Dockerfile` in each directory and packages the code into isolated Docker images.
-4. **Security Scan (Innovation)**: A DevSecOps step that scans the newly built images for known vulnerabilities before they are released.
-5. **Push to Docker Hub**: The verified images are uploaded to the public Docker Hub registry, tagged with the specific Jenkins Build Number (e.g., `v5`).
-6. **Deploy to Kubernetes**: Jenkins dynamically updates the Kubernetes YAML files with the new version tag and applies them to the cluster.
-7. **Verify & Rollback**: Jenkins monitors the Kubernetes rollout. If the new pods fail to start (e.g., crashing code), Jenkins immediately catches the error and issues a rollback command to restore the previous working version.
+4. **Push to Docker Hub**: The verified images are uploaded to the public Docker Hub registry, tagged with the specific Jenkins Build Number (e.g., `v5`).
+5. **Deploy to Kubernetes**: Jenkins dynamically updates the Kubernetes YAML files with the new version tag and applies them to the cluster.
+6. **Verify & Rollback**: Jenkins monitors the Kubernetes rollout. If the new pods fail to start (e.g., crashing code), Jenkins immediately catches the error and issues a rollback command to restore the previous working version.
 
 ---
 
@@ -108,3 +106,12 @@ Build Now
 ```
 
 To watch the pipeline progress in real-time, click on the flashing build number and open the console output.
+
+---
+
+## Innovation Challenge Features
+
+As part of the project requirements, several advanced cloud-native features were integrated:
+1. **Automated Pipeline Rollbacks:** Jenkins automatically restores the cluster to the last stable state if a deployment fails.
+2. **Zero-Downtime DB Migrations:** Kubernetes `initContainers` handle database schema updates before backend pods start.
+3. **Advanced Health Probes:** Custom Liveness and Readiness probes to ensure resilient autoscaling.

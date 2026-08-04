@@ -5,21 +5,21 @@ To fulfill the requirements of the Innovation Challenge (20 Marks), I have imple
 
 ---
 
-## 1. DevSecOps with Automated Container Vulnerability Scanning
+## 1. Automated Pipeline Rollbacks (Self-Healing CI/CD)
 **Why the feature was chosen:**
-Security is often an afterthought in traditional CI/CD pipelines. By "shifting left," we catch vulnerabilities in our dependencies and base images before they ever reach production. 
+Deploying broken code is a common issue that causes downtime. By implementing an automated rollback mechanism in Jenkins, we ensure that the system instantly recovers if a bad deployment occurs, minimizing user impact.
 
 **How it works:**
-In our `Jenkinsfile`, there is a dedicated `Security Scan (INNOVATION)` stage utilizing **Trivy**. After the `eventportal-frontend` and `eventportal-backend` images are built but *before* they are pushed to Docker Hub, Trivy scans the layers for known CVEs (Common Vulnerabilities and Exposures). If `HIGH` or `CRITICAL` vulnerabilities are found, the pipeline is configured to alert the team.
+In our `Jenkinsfile`, there is a `post { failure { ... } }` block. If the deployment stage fails (e.g., Kubernetes rejects the rollout, or the pods crash), Jenkins immediately executes `kubectl rollout undo` on the affected deployments, instantly reverting the cluster to the last stable state.
 
 **Benefits to the organization:**
-- Drastically reduces the risk of deploying compromised applications.
-- Ensures compliance with security standards (e.g., SOC2, ISO27001).
-- Provides immediate feedback to developers if they introduce a vulnerable library.
+- Drastically reduces mean time to recovery (MTTR) during outages.
+- Provides developers with a safety net when pushing new features.
+- Ensures the production environment is always in a working state.
 
 **Challenges faced during implementation:**
-- Integrating the scanner without significantly slowing down the pipeline required caching the vulnerability databases.
-- Balancing security and agility: we had to configure the scanner to only block on `CRITICAL` issues to avoid stopping the pipeline for minor, unpatchable upstream issues.
+- Configuring Jenkins to gracefully handle failure states without breaking the pipeline execution required custom error handling (`catchError` blocks).
+- Ensuring the rollback command targeted the correct deployment revisions.
 
 ---
 
