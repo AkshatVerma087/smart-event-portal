@@ -1,78 +1,110 @@
 # Smart Event Management Portal - DevOps Pipeline
 
-This repository contains the complete source code and DevOps pipeline configurations for the Smart Event Management Portal. It demonstrates a modern, cloud-native application lifecycle spanning from local development to automated deployment.
-
-## Architecture & Tech Stack
-
-This project uses a multi-tier microservices architecture:
-
-- **Frontend:** React / Vite application served by Nginx.
-- **Backend:** Node.js Express REST API.
-- **Database:** PostgreSQL accessed via Prisma ORM.
-
-### DevOps Toolchain
-- **Source Code Management:** Git & GitHub
-- **Containerization:** Docker & Docker Compose
-- **Orchestration:** Kubernetes (Deployment, Service, Scaling, Rolling Updates)
-- **CI/CD Automation:** Jenkins (Declarative Pipeline)
+Welcome to the Smart Event Management Portal! This project is a complete showcase of a modern DevOps lifecycle, taking a multi-tier web application (React, Node.js, PostgreSQL) and wrapping it in a robust, cloud-native infrastructure using Docker, Kubernetes, and Jenkins.
 
 ---
 
-## Directory Structure
+## 📁 Project File Structure
 
-```
-smart-event-portal/
-├── frontend/               # React frontend source code and Dockerfile
-├── backend/                # Node.js backend source code and Dockerfile
-├── k8s/                    # Kubernetes manifests (deployments, services)
-├── docker-compose.yml      # Local development multi-container setup
-├── Jenkinsfile             # Automated CI/CD pipeline definition
-├── architecture-diagram.md # Mermaid architecture visualization
-└── innovation-report.md    # Details on advanced DevSecOps features implemented
-```
+Here is a detailed breakdown of the files and directories in this repository and what they do:
+
+- **`frontend/`**: Contains the React + Vite frontend application.
+  - `Dockerfile`: Instructions for building the optimized, production-ready Nginx container for the frontend.
+  - `package.json`: Defines the frontend dependencies and scripts.
+- **`backend/`**: Contains the Node.js Express REST API.
+  - `Dockerfile`: Instructions for containerizing the backend API.
+  - `prisma/`: Contains the database schema and migration tools.
+- **`k8s/`**: Contains all Kubernetes YAML manifests for orchestration.
+  - `frontend-deployment.yaml`: Defines how the frontend is scaled and deployed across the cluster, including liveness/readiness probes.
+  - `backend-deployment.yaml`: Defines the backend deployment, including a database migration `initContainer`.
+  - `db-deployment.yaml`: Provisions the PostgreSQL database pod.
+  - `db-secret.yaml`: Securely stores the database credentials.
+- **`Jenkinsfile`**: The heart of the CI/CD pipeline. A Groovy script that dictates every step Jenkins takes from checking out the code to deploying it to Kubernetes.
+- **`docker-compose.yml`**: A configuration file used to spin up the entire application stack locally with a single command for development purposes.
+- **`innovation-report.md`**: A detailed report on the advanced DevSecOps features (vulnerability scanning, automated DB migrations, advanced health probes) implemented for the Innovation Challenge.
 
 ---
 
-## Getting Started
+## 🚀 The CI/CD Pipeline (Jenkins)
 
-### 1. Running Locally (Docker Compose)
-To run the entire stack locally without installing Node.js or Postgres:
+Our CI/CD pipeline is fully automated. Whenever new code is pushed to this repository, Jenkins detects the change and triggers the following workflow:
+
+```mermaid
+graph TD
+    A[Push Code to GitHub] --> B(Checkout SCM)
+    B --> C(Build & Test Backend)
+    C --> D(Build & Test Frontend)
+    D --> E(Build Docker Images)
+    E --> F(Security Scan)
+    F --> G(Push to Docker Hub)
+    G --> H(Deploy to Kubernetes)
+    H --> I(Verify Deployment)
+    I -->|Failure| J[Auto-Rollback]
+    I -->|Success| K[Deployment Complete]
+```
+
+### Pipeline Stages Explained:
+1. **Checkout SCM**: Jenkins connects to GitHub and pulls the latest source code.
+2. **Build & Test**: Jenkins enters the `backend` and `frontend` directories, installs dependencies via `npm`, runs tests, and creates the optimized frontend build.
+3. **Build Docker Images**: Jenkins reads the `Dockerfile` in each directory and packages the code into isolated Docker images.
+4. **Security Scan (Innovation)**: A DevSecOps step that scans the newly built images for known vulnerabilities before they are released.
+5. **Push to Docker Hub**: The verified images are uploaded to the public Docker Hub registry, tagged with the specific Jenkins Build Number (e.g., `v5`).
+6. **Deploy to Kubernetes**: Jenkins dynamically updates the Kubernetes YAML files with the new version tag and applies them to the cluster.
+7. **Verify & Rollback**: Jenkins monitors the Kubernetes rollout. If the new pods fail to start (e.g., crashing code), Jenkins immediately catches the error and issues a rollback command to restore the previous working version.
+
+---
+
+## 💻 Setup and Deployment Commands
+
+Follow these steps to run the project yourself.
+
+### 1. Local Development via Docker Compose
+If you want to quickly test the application locally without Kubernetes, you can use Docker Compose. This will build the images and start the database, backend, and frontend connected together.
 
 ```bash
 docker-compose up -d --build
 ```
-- Frontend will be available at: `http://localhost:5173`
-- Backend API will be available at: `http://localhost:5000`
 
-### 2. Deploying to Kubernetes (Local / Minikube / Docker Desktop)
-Ensure your Kubernetes cluster is running, then apply the manifests:
+To stop the application and clean up the containers, run the following:
+
+```bash
+docker-compose down
+```
+
+### 2. Kubernetes Deployment
+If you are running a local Kubernetes cluster (like Docker Desktop or Minikube), you can deploy the application using the manifests in the `k8s/` folder.
+
+First, apply the database credentials secret:
+
+```bash
+kubectl apply -f k8s/db-secret.yaml
+```
+
+Next, apply all the remaining deployments and services (frontend, backend, database):
 
 ```bash
 kubectl apply -f k8s/
 ```
 
-Check the status of your pods:
+To verify that your pods are spinning up successfully, check their status:
+
 ```bash
 kubectl get pods
 ```
 
-### 3. CI/CD Automation (Jenkins)
-The provided `Jenkinsfile` orchestrates the entire deployment process:
-1. **Checkout:** Pulls the latest code.
-2. **Build & Test:** Runs NPM install and tests.
-3. **Containerize:** Builds Docker images for frontend and backend.
-4. **Security Scan:** Analyzes images for vulnerabilities.
-5. **Push:** Pushes versioned images to Docker Hub.
-6. **Deploy:** Dynamically updates Kubernetes manifests and applies them.
-7. **Verify & Rollback:** Automatically rolls back the deployment if health checks fail.
+To see the services and the ports they are running on (so you can access them in your browser):
 
----
+```bash
+kubectl get svc
+```
 
-## Innovation Challenge Features
+### 3. CI/CD Automated Deployment
+If you have Jenkins installed, you don't need to run the above Kubernetes commands manually. Instead, you can trigger the pipeline.
 
-As part of the project requirements, several advanced cloud-native features were integrated:
-1. **DevSecOps Integration:** Automated vulnerability scanning during the build process.
-2. **Zero-Downtime DB Migrations:** Kubernetes `initContainers` handle database schema updates before backend pods start.
-3. **Advanced Health Probes:** Custom Liveness and Readiness probes to ensure resilient autoscaling.
+Ensure your `Jenkinsfile` is configured correctly, then inside Jenkins, click:
 
-*See `innovation-report.md` for a full breakdown of these features.*
+```text
+Build Now
+```
+
+To watch the pipeline progress in real-time, click on the flashing build number and open the console output.
