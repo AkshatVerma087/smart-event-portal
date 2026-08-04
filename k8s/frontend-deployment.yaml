@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: eventportal-frontend
-          image: akshatverma087/eventportal-frontend:v1
+          image: akshatverma087/event-portal-frontend:v1
           ports:
             - containerPort: 80
           livenessProbe:
