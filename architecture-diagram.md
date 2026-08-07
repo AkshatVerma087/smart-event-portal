@@ -9,8 +9,7 @@ graph TD
     subgraph Jenkins [Jenkins CI/CD Pipeline]
         Github --> Checkout[Checkout Code]
         Checkout --> BuildTest[Build & Basic Tests]
-        BuildTest --> SecurityScan[Trivy Security Scan <br/> <i>(Innovation)</i>]
-        SecurityScan --> DockerBuild[Build Docker Images]
+        BuildTest --> DockerBuild[Build Docker Images]
         DockerBuild --> DockerPush[Push to Docker Hub]
         DockerPush --> K8sDeploy[Update & Deploy YAMLs]
         K8sDeploy --> Verify[Verify Rollout]
@@ -27,7 +26,7 @@ graph TD
         KubeApi --> FrontendDeploy[Frontend Deployment]
         KubeApi --> BackendDeploy[Backend Deployment]
         
-        BackendDeploy --> InitContainer[InitContainer: Prisma Migrate <br/> <i>(Innovation)</i>]
+        BackendDeploy --> InitContainer["InitContainer: Prisma Migrate <br/> <i>(Innovation)</i>"]
         InitContainer --> BackendPods(Backend Pods xN)
         
         FrontendDeploy --> FrontendPods(Frontend Pods xN)
@@ -36,7 +35,7 @@ graph TD
         BackendPods --> BackendSVC(Backend Service: ClusterIP)
         
         %% Advanced Probes Innovation
-        HealthProbes[[Advanced Health Probes <br/> <i>(Innovation)</i>]] -.- BackendPods
+        HealthProbes[["Advanced Health Probes <br/> <i>(Innovation)</i>"]] -.- BackendPods
         HealthProbes -.- FrontendPods
     end
     
